@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}{{ book.title }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{% url 'book_list' %}">Books</a></li>
+  <li class="breadcrumb-item active" aria-current="page">{{ book.title|truncatechars:50 }}</li>
+</ol></nav>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <div class="row g-4">
+      {% if book.image_url %}
+      <div class="col-sm-auto"><img class="cover-lg rounded shadow-sm" src="{{ book.image_url }}" alt="Cover of {{ book.title }}"></div>
+      {% endif %}
+      <div class="col">
+        <h1 class="h3">{{ book.title }}</h1>
+        <p class="lead mb-3">{{ book.authors }}</p>
+        <dl class="row mb-2">
+          <dt class="col-sm-4 col-lg-3">Published</dt><dd class="col-sm-8 col-lg-9">{{ book.publication_year|default_if_none:"—" }}</dd>
+          <dt class="col-sm-4 col-lg-3">ISBN</dt><dd class="col-sm-8 col-lg-9">{{ book.isbn|default:"—" }}</dd>
+          <dt class="col-sm-4 col-lg-3">Language</dt><dd class="col-sm-8 col-lg-9">{{ book.language_code|default:"—" }}</dd>
+          <dt class="col-sm-4 col-lg-3">Average rating</dt><dd class="col-sm-8 col-lg-9">{{ book.average_rating|default_if_none:"—" }}</dd>
+          <dt class="col-sm-4 col-lg-3">Copies available</dt>
+          <dd class="col-sm-8 col-lg-9">
+            <span class="badge {% if book.available_copies %}text-bg-success{% else %}text-bg-secondary{% endif %}">{{ book.available_copies }} of {{ book.total_copies }}</span>
+          </dd>
+          {% if book.goodreads_book_id %}
+          <dt class="col-sm-4 col-lg-3">Goodreads ID</dt><dd class="col-sm-8 col-lg-9">{{ book.goodreads_book_id }}</dd>
+          {% endif %}
+        </dl>
+        {% if book.tag_list %}
+        <div class="mb-3">{% for tag in book.tag_list %}<span class="badge rounded-pill text-bg-light border me-1">{{ tag }}</span>{% endfor %}</div>
+        {% endif %}
+        <div class="d-flex flex-wrap gap-2">
+          {% if book.available_copies %}
+          <a class="btn btn-success" href="{% url 'loan_create' %}?book={{ book.pk }}">Lend this book</a>
+          {% else %}
+          <button class="btn btn-success" type="button" disabled>No copies available</button>
+          {% endif %}
+          <a class="btn btn-outline-primary" href="{% url 'book_update' book.pk %}">Edit</a>
+          <a class="btn btn-outline-danger" href="{% url 'book_delete' book.pk %}">Delete</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <h2 class="h5">On loan now</h2>
+    {% if active_loans %}
+    <ul class="list-group shadow-sm">
+      {% for loan in active_loans %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span><a href="{{ loan.member.get_absolute_url }}">{{ loan.member }}</a> · due {{ loan.due_date }}</span>
+        {% if loan.is_overdue %}<span class="badge text-bg-danger">{{ loan.days_overdue }} days overdue</span>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-body-secondary">No copies are on loan.</p>
+    {% endif %}
+  </div>
+  <div class="col-lg-6">
+    <h2 class="h5">Member ratings</h2>
+    {% if ratings %}
+    <ul class="list-group shadow-sm">
+      {% for rating in ratings %}
+      <li class="list-group-item d-flex justify-content-between">
+        <a href="{{ rating.member.get_absolute_url }}">{{ rating.member }}</a>
+        <span>{{ rating.score }} / 5</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-body-secondary">No member has rated this book yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% block similar_books %}{% endblock %}
+{% endblock %}
