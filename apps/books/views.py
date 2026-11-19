@@ -4,6 +4,7 @@ from django.core.paginator import Paginator
 from django.db.models import ProtectedError, Q
 from django.shortcuts import get_object_or_404, redirect, render
 
+from . import recommender
 from .forms import BookForm
 from .models import Book
 
@@ -37,7 +38,13 @@ def book_detail(request, pk):
     return render(
         request,
         "books/book_detail.html",
-        {"book": book, "active_loans": active_loans, "ratings": ratings},
+        {
+            "book": book,
+            "active_loans": active_loans,
+            "ratings": ratings,
+            "recommender_ready": recommender.is_trained(),
+            "similar": recommender.similar_books(book.goodreads_book_id),
+        },
     )
 
 

@@ -1,0 +1,17 @@
+<div class="row row-cols-2 row-cols-sm-3 row-cols-lg-5 g-3">
+  {% for book in books %}
+  <div class="col">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body d-flex flex-column">
+        {% if book.image_url %}<img class="cover-md rounded mb-2" src="{{ book.image_url }}" alt="" loading="lazy">{% endif %}
+        <a class="stretched-link fw-semibold small" href="{{ book.get_absolute_url }}">{{ book.title|truncatechars:60 }}</a>
+        <span class="text-body-secondary small">{{ book.authors|truncatechars:40 }}</span>
+        <span class="mt-auto pt-2 small">
+          {% if book.available_copies %}<span class="badge text-bg-success">{{ book.available_copies }} available</span>
+          {% else %}<span class="badge text-bg-secondary">All on loan</span>{% endif %}
+        </span>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>

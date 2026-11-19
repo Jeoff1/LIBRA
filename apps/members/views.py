@@ -4,6 +4,8 @@ from django.core.paginator import Paginator
 from django.db.models import Count, ProtectedError, Q
 from django.shortcuts import get_object_or_404, redirect, render
 
+from apps.books import recommender
+
 from .forms import MemberForm
 from .models import Member
 
@@ -35,6 +37,8 @@ def member_detail(request, pk):
             "active_loans": [loan for loan in loans if loan.is_active],
             "past_loans": [loan for loan in loans if not loan.is_active],
             "ratings": ratings,
+            "recommender_ready": recommender.is_trained(),
+            "recommendations": recommender.recommend_for_member(member),
         },
     )
 

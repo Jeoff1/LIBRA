@@ -71,4 +71,14 @@
     {% endif %}
   </div>
 </div>
+
+<h2 class="h5 mt-4">Recommended for this member</h2>
+{% if not recommender_ready %}
+<div class="alert alert-secondary">Recommendations not trained yet.</div>
+{% elif recommendations %}
+<p class="text-body-secondary small">Based on the books {{ member.name }} rated 4–5 stars, or else the books they have borrowed.</p>
+{% include "books/_book_cards.html" with books=recommendations %}
+{% else %}
+<p class="text-body-secondary">Lend or rate a few books from the catalogue to get recommendations.</p>
+{% endif %}
 {% endblock %}

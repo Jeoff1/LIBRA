@@ -78,5 +78,14 @@
   </div>
 </div>
 
-{% block similar_books %}{% endblock %}
+<h2 class="h5 mt-4">Similar books</h2>
+{% if not recommender_ready %}
+<div class="alert alert-secondary">Recommendations not trained yet.</div>
+{% elif not book.goodreads_book_id %}
+<p class="text-body-secondary">Similar books are only available for books imported from the dataset.</p>
+{% elif similar %}
+{% include "books/_book_cards.html" with books=similar %}
+{% else %}
+<p class="text-body-secondary">No similar books found.</p>
+{% endif %}
 {% endblock %}
