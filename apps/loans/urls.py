@@ -7,4 +7,5 @@ urlpatterns = [
     path("loans/overdue/", coming_soon, name="loan_overdue"),
     path("loans/new/", coming_soon, name="loan_create"),
     path("ratings/", coming_soon, name="rating_list"),
+    path("ratings/new/", coming_soon, name="rating_create"),
 ]

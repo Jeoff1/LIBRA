@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ member.name }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb"><ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{% url 'member_list' %}">Members</a></li>
+  <li class="breadcrumb-item active" aria-current="page">{{ member.name }}</li>
+</ol></nav>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h1 class="h3">{{ member.name }}</h1>
+    <dl class="row mb-3">
+      <dt class="col-sm-3 col-lg-2">Email</dt><dd class="col-sm-9 col-lg-10"><a href="mailto:{{ member.email }}">{{ member.email }}</a></dd>
+      <dt class="col-sm-3 col-lg-2">Phone</dt><dd class="col-sm-9 col-lg-10">{{ member.phone|default:"—" }}</dd>
+      <dt class="col-sm-3 col-lg-2">Joined</dt><dd class="col-sm-9 col-lg-10">{{ member.date_joined }}</dd>
+    </dl>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-success" href="{% url 'loan_create' %}?member={{ member.pk }}">Lend a book</a>
+      <a class="btn btn-outline-success" href="{% url 'rating_create' %}?member={{ member.pk }}">Add rating</a>
+      <a class="btn btn-outline-primary" href="{% url 'member_update' member.pk %}">Edit</a>
+      <a class="btn btn-outline-danger" href="{% url 'member_delete' member.pk %}">Delete</a>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <h2 class="h5">Books on loan ({{ active_loans|length }})</h2>
+    {% if active_loans %}
+    <ul class="list-group shadow-sm mb-4">
+      {% for loan in active_loans %}
+      <li class="list-group-item d-flex justify-content-between align-items-center gap-2">
+        <span><a href="{{ loan.book.get_absolute_url }}">{{ loan.book.title|truncatechars:50 }}</a><br>
+          <small class="text-body-secondary">borrowed {{ loan.borrow_date }} · due {{ loan.due_date }}</small></span>
+        {% if loan.is_overdue %}<span class="badge text-bg-danger">{{ loan.days_overdue }} days overdue</span>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-body-secondary">No books on loan.</p>
+    {% endif %}
+
+    <h2 class="h5">Loan history ({{ past_loans|length }})</h2>
+    {% if past_loans %}
+    <ul class="list-group shadow-sm">
+      {% for loan in past_loans %}
+      <li class="list-group-item">
+        <a href="{{ loan.book.get_absolute_url }}">{{ loan.book.title|truncatechars:50 }}</a><br>
+        <small class="text-body-secondary">{{ loan.borrow_date }} → returned {{ loan.return_date }}</small>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-body-secondary">No returned books yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="col-lg-6">
+    <h2 class="h5">Ratings ({{ ratings|length }})</h2>
+    {% if ratings %}
+    <ul class="list-group shadow-sm">
+      {% for rating in ratings %}
+      <li class="list-group-item d-flex justify-content-between">
+        <a href="{{ rating.book.get_absolute_url }}">{{ rating.book.title|truncatechars:50 }}</a>
+        <span>{{ rating.score }} / 5</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-body-secondary">No ratings yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

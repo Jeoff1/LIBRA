@@ -1,8 +1,11 @@
 from django.urls import path
 
-from apps.core.views import coming_soon
+from . import views
 
 urlpatterns = [
-    path("", coming_soon, name="member_list"),
-    path("<int:pk>/", coming_soon, name="member_detail"),
+    path("", views.member_list, name="member_list"),
+    path("new/", views.member_create, name="member_create"),
+    path("<int:pk>/", views.member_detail, name="member_detail"),
+    path("<int:pk>/edit/", views.member_update, name="member_update"),
+    path("<int:pk>/delete/", views.member_delete, name="member_delete"),
 ]

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Members{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Members <span class="text-body-secondary fs-6">({{ page_obj.paginator.count }})</span></h1>
+  <a class="btn btn-primary" href="{% url 'member_create' %}">+ Add member</a>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-6">
+    <input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Search name, email or phone">
+  </div>
+  <div class="col-md-6 d-flex gap-2">
+    <button class="btn btn-outline-primary" type="submit">Search</button>
+    {% if q %}<a class="btn btn-outline-secondary" href="{% url 'member_list' %}">Clear</a>{% endif %}
+  </div>
+</form>
+
+{% if page_obj.object_list %}
+<div class="table-responsive bg-body rounded shadow-sm">
+  <table class="table table-hover align-middle mb-0">
+    <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Joined</th><th>Books out</th></tr></thead>
+    <tbody>
+      {% for member in page_obj %}
+      <tr>
+        <td><a href="{{ member.get_absolute_url }}">{{ member.name }}</a></td>
+        <td>{{ member.email }}</td>
+        <td>{{ member.phone|default:"—" }}</td>
+        <td>{{ member.date_joined }}</td>
+        <td>{{ member.active_loans }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="mt-3">{% include "includes/pagination.html" %}</div>
+{% elif q %}
+<div class="alert alert-info">No members match your search.</div>
+{% else %}
+<div class="alert alert-info">No members yet. <a href="{% url 'member_create' %}">Add the first one.</a></div>
+{% endif %}
+{% endblock %}
