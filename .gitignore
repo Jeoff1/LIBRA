@@ -1,0 +1,40 @@
+# Virtual environments and secrets
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python and Django
+__pycache__/
+*.py[cod]
+*.sqlite3
+staticfiles/
+media/*
+!media/.gitkeep
+protected_media/
+
+# Tool caches and coverage
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Logs, temporary files, and editors
+*.log
+*.tmp
+*.temp
+~$*
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Obsidian per-user UI state
+.obsidian/workspace*.json
+
+# Downloaded ML model files (see docs: Technology-Stack)
+ml_models/
