@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% load static humanize %}
+{% block title %}Library Inventory and Book Recommendation Application{% endblock %}
+{% block body_class %}public{% endblock %}
+{% block body %}
+<header class="landing-nav">
+  <div class="container d-flex align-items-center gap-3">
+    <a href="{% url 'landing' %}"><img src="{% static 'images/libra-name-light.svg' %}" alt="LIBRA"></a>
+    <nav class="ms-auto d-none d-md-flex">
+      <a class="nav-link px-3" href="#features">Features</a>
+      <a class="nav-link px-3" href="#recommendations">Recommendations</a>
+      <a class="nav-link px-3" href="#how">How it works</a>
+    </nav>
+    {% if user.is_authenticated %}
+    <a class="btn btn-cream ms-auto ms-md-3" href="{% url 'dashboard' %}">Open dashboard <i class="bi bi-arrow-right ms-1"></i></a>
+    {% else %}
+    <a class="btn btn-outline-cream ms-auto ms-md-3 text-nowrap" href="{% url 'login' %}"><i class="bi bi-person me-1"></i><span class="d-none d-sm-inline">Librarian log in</span><span class="d-sm-none">Log in</span></a>
+    {% endif %}
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <span class="eyebrow mb-3">Library Inventory &amp; Book Recommendation</span>
+        <h1 class="mt-3 mb-4">Every book in its place. <em>Every reader</em> on to the next one.</h1>
+        <p class="lead mb-4">LIBRA keeps your catalogue, members and loans in one calm place, flags what's overdue, and suggests each member's next read from {{ book_count|intcomma }} titles.</p>
+        <div class="d-flex flex-wrap gap-2">
+          {% if user.is_authenticated %}
+          <a class="btn btn-success btn-lg px-4" href="{% url 'dashboard' %}">Open dashboard <i class="bi bi-arrow-right ms-1"></i></a>
+          {% else %}
+          <a class="btn btn-success btn-lg px-4" href="{% url 'login' %}">Get started <i class="bi bi-arrow-right ms-1"></i></a>
+          {% endif %}
+          <a class="btn btn-outline-cream btn-lg px-4" href="#how">See how it works</a>
+        </div>
+      </div>
+      {% if shelf.2 %}
+      <div class="col-lg-6 d-none d-lg-block" aria-hidden="true">
+        <div class="shelf">
+          {% for column in shelf %}
+          <div class="shelf-col">{% for book in column %}{% include "books/_cover.html" with size="fluid" %}{% endfor %}</div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<div class="container stats-ribbon">
+  <div class="card">
+    <div class="row g-0 text-center text-md-start">
+      <div class="col-md-4 ribbon-stat d-flex align-items-center gap-3 justify-content-center justify-content-md-start">
+        <span class="stat-icon brown"><i class="bi bi-journal-bookmark"></i></span>
+        <div><div class="stat-value fs-2">{{ book_count|intcomma }}</div><div class="stat-label">Books catalogued</div></div>
+      </div>
+      <div class="col-md-4 ribbon-stat d-flex align-items-center gap-3 justify-content-center justify-content-md-start">
+        <span class="stat-icon sage"><i class="bi bi-calendar-check"></i></span>
+        <div><div class="stat-value fs-2">14 days</div><div class="stat-label">Standard loan</div></div>
+      </div>
+      <div class="col-md-4 ribbon-stat d-flex align-items-center gap-3 justify-content-center justify-content-md-start">
+        <span class="stat-icon brown"><i class="bi bi-stars"></i></span>
+        <div><div class="stat-value fs-2">10</div><div class="stat-label">Look-alikes per book</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="section" id="features">
+  <div class="container">
+    <div class="text-center mx-auto mb-5" style="max-width: 44rem">
+      <span class="eyebrow text-success">What's inside</span>
+      <h2 class="section-heading mt-3">Everything the front desk needs, nothing it doesn't</h2>
+      <p class="section-lead mx-auto">Built for librarians: quick to learn, and every page is a click or two away.</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-4">
+        <div class="feature-card"><span class="stat-icon brown"><i class="bi bi-book"></i></span>
+          <h3>A catalogue you can search</h3><p>Find any of {{ book_count|intcomma }} books by title, author or year, with covers, tags and live copy counts.</p></div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="feature-card"><span class="stat-icon sage"><i class="bi bi-people"></i></span>
+          <h3>Members at a glance</h3><p>Contact details, what each member has out, their history and their ratings, on one page.</p></div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="feature-card"><span class="stat-icon brown"><i class="bi bi-arrow-left-right"></i></span>
+          <h3>Lending in two clicks</h3><p>Pick the book, pick the member. Copies are counted for you, and lending stops when the shelf is empty.</p></div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="feature-card"><span class="stat-icon rust"><i class="bi bi-alarm"></i></span>
+          <h3>Overdue, flagged</h3><p>Late loans surface on their own, most overdue first, with a one-click return.</p></div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="feature-card"><span class="stat-icon sage"><i class="bi bi-star"></i></span>
+          <h3>Ratings that count</h3><p>Record what members thought of the books they borrowed, and let it shape what they're offered next.</p></div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="feature-card featured"><span class="stat-icon"><i class="bi bi-stars"></i></span>
+          <h3>Their next favourite</h3><p>A machine-learning model reads every book's title, authors and tags to suggest what each member will enjoy next.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if demo_book and demo_similar %}
+<section class="section recs-demo" id="recommendations">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-4">
+        <span class="eyebrow text-success">Recommendations</span>
+        <h2 class="section-heading mt-3">Loved one book? Here's what comes next.</h2>
+        <p class="section-lead">These suggestions come straight from LIBRA's model: books whose titles, authors and reader tags most resemble <em>{{ demo_book.title }}</em>.</p>
+      </div>
+      <div class="col-lg-8">
+        <div class="recs-row">
+          <a class="book-card recs-source" href="{% url 'login' %}">
+            <span class="badge text-bg-primary mb-2">Loved</span>
+            {% include "books/_cover.html" with book=demo_book size="fluid" %}
+            <div class="book-card-title">{{ demo_book.title|truncatechars:40 }}</div>
+            <div class="book-card-author">{{ demo_book.authors|truncatechars:30 }}</div>
+          </a>
+          <i class="bi bi-arrow-right recs-arrow" aria-hidden="true"></i>
+          {% for book in demo_similar %}
+          <a class="book-card" href="{% url 'login' %}">
+            <span class="badge text-bg-success mb-2">Suggested</span>
+            {% include "books/_cover.html" with size="fluid" %}
+            <div class="book-card-title">{{ book.title|truncatechars:40 }}</div>
+            <div class="book-card-author">{{ book.authors|truncatechars:30 }}</div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section" id="how">
+  <div class="container">
+    <div class="text-center mx-auto mb-5" style="max-width: 44rem">
+      <span class="eyebrow text-success">How it works</span>
+      <h2 class="section-heading mt-3">From shelf to suggestion in three steps</h2>
+    </div>
+    <div class="row g-4 text-center">
+      <div class="col-md-4">
+        <span class="step-num">1</span>
+        <h3 class="h5 mt-3">Lend and record</h3>
+        <p class="text-body-secondary">Librarians lend books, take returns and note each member's 1–5 star rating.</p>
+      </div>
+      <div class="col-md-4">
+        <span class="step-num">2</span>
+        <h3 class="h5 mt-3">Compare every book</h3>
+        <p class="text-body-secondary">LIBRA turns each book's title, authors and top tags into TF-IDF numbers and measures how alike they are.</p>
+      </div>
+      <div class="col-md-4">
+        <span class="step-num">3</span>
+        <h3 class="h5 mt-3">Suggest the next read</h3>
+        <p class="text-body-secondary">Books like the ones a member rated highly rise to the top, minus anything they've already read.</p>
+      </div>
+    </div>
+
+    <div class="cta-band mt-5 d-md-flex align-items-center justify-content-between gap-4">
+      <div>
+        <h2 class="mb-1">Ready to open the library?</h2>
+        <p class="mb-md-0">Log in with your librarian account to get started.</p>
+      </div>
+      <a class="btn btn-primary btn-lg px-4 flex-shrink-0" href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'login' %}{% endif %}">
+        {% if user.is_authenticated %}Open dashboard{% else %}Librarian log in{% endif %} <i class="bi bi-arrow-right ms-1"></i></a>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="row g-4 align-items-center">
+      <div class="col-md-6"><img src="{% static 'images/libra-logo-light.svg' %}" alt="LIBRA – Library Inventory and Book Recommendation Application"></div>
+      <div class="col-md-6 text-md-end">
+        <div>Book data: <a href="https://www.kaggle.com/datasets/zygmunt/goodbooks-10k">goodbooks-10k</a> (Goodreads).</div>
+        <div>An Application Development project · {% now "Y" %}</div>
+      </div>
+    </div>
+  </div>
+</footer>
+{% endblock %}

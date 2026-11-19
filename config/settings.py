@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.humanize",
     "apps.core.apps.CoreConfig",
     "apps.books.apps.BooksConfig",
     "apps.members.apps.MembersConfig",
@@ -58,6 +59,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "apps.core.context_processors.libra",
             ],
         },
     },
@@ -105,7 +107,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "dashboard"
-LOGOUT_REDIRECT_URL = "login"
+LOGOUT_REDIRECT_URL = "landing"
 
 # Bootstrap calls its red alert "danger".
 MESSAGE_TAGS = {messages.ERROR: "danger"}

@@ -1,16 +1,19 @@
 {% extends "base.html" %}
 {% block title %}Ratings{% endblock %}
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <h1 class="h3 mb-0">Ratings <span class="text-body-secondary fs-6">({{ page_obj.paginator.count }})</span></h1>
-  <a class="btn btn-primary" href="{% url 'rating_create' %}">+ Add rating</a>
+<div class="page-header">
+  <div>
+    <h1 class="h3 mb-0">Ratings</h1>
+    <p>{{ page_obj.paginator.count }} {% if q %}matching{% else %}recorded{% endif %}</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'rating_create' %}"><i class="bi bi-star me-1"></i>Add rating</a>
 </div>
 
 <form method="get" class="row g-2 mb-3">
-  <div class="col-md-6"><input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Search member or book title"></div>
+  <div class="col-md-6 input-icon"><i class="bi bi-search"></i><input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Search member or book title" aria-label="Search ratings"></div>
   <div class="col-md-6 d-flex gap-2">
-    <button class="btn btn-outline-primary" type="submit">Search</button>
-    {% if q %}<a class="btn btn-outline-secondary" href="{% url 'rating_list' %}">Clear</a>{% endif %}
+    <button class="btn btn-primary" type="submit">Search</button>
+    {% if q %}<a class="btn btn-outline-secondary" href="{% url 'rating_list' %}" title="Clear search"><i class="bi bi-x-lg"></i></a>{% endif %}
   </div>
 </form>
 
@@ -23,11 +26,11 @@
       <tr>
         <td><a href="{{ rating.member.get_absolute_url }}">{{ rating.member }}</a></td>
         <td><a href="{{ rating.book.get_absolute_url }}">{{ rating.book.title|truncatechars:50 }}</a></td>
-        <td><span class="text-warning">{% for i in "12345" %}{% if forloop.counter <= rating.score %}★{% else %}☆{% endif %}{% endfor %}</span> {{ rating.score }}/5</td>
+        <td>{% include "loans/_stars.html" with score=rating.score %}</td>
         <td>{{ rating.rated_on }}</td>
         <td class="text-end text-nowrap">
-          <a class="btn btn-sm btn-outline-primary" href="{% url 'rating_update' rating.pk %}">Edit</a>
-          <a class="btn btn-sm btn-outline-danger" href="{% url 'rating_delete' rating.pk %}">Delete</a>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'rating_update' rating.pk %}" title="Edit rating"><i class="bi bi-pencil"></i><span class="visually-hidden">Edit rating</span></a>
+          <a class="btn btn-sm btn-outline-danger" href="{% url 'rating_delete' rating.pk %}" title="Delete rating"><i class="bi bi-trash"></i><span class="visually-hidden">Delete rating</span></a>
         </td>
       </tr>
       {% endfor %}
@@ -36,8 +39,8 @@
 </div>
 <div class="mt-3">{% include "includes/pagination.html" %}</div>
 {% elif q %}
-<div class="alert alert-info">No ratings match your search.</div>
+<div class="card shadow-sm"><div class="empty-state"><i class="bi bi-search"></i>No ratings match your search.</div></div>
 {% else %}
-<div class="alert alert-info">No ratings yet. A member can rate a book once they have borrowed it.</div>
+<div class="card shadow-sm"><div class="empty-state"><i class="bi bi-star"></i>No ratings yet. A member can rate a book once they have borrowed it.</div></div>
 {% endif %}
 {% endblock %}

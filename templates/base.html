@@ -1,57 +1,82 @@
-<!doctype html>
+{% load static %}<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}LIBRA{% endblock %} · LIBRA</title>
+  <meta name="description" content="LIBRA – Library Inventory and Book Recommendation Application">
+  <link rel="icon" href="{% static 'images/LIBRA_Logo.svg' %}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600;1,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-  <style>
-    .cover-sm { width: 40px; height: 60px; object-fit: cover; }
-    .cover-md { width: 70px; height: 105px; object-fit: cover; }
-    .cover-lg { max-width: 160px; }
-  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="{% static 'css/libra.css' %}">
 </head>
-<body class="bg-body-tertiary">
-{% if user.is_authenticated %}
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-  <div class="container">
-    <a class="navbar-brand fw-semibold" href="{% url 'dashboard' %}">LIBRA</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="nav">
-      {% with url_name=request.resolver_match.url_name %}
-      <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link {% if url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">Dashboard</a></li>
-        <li class="nav-item"><a class="nav-link {% if url_name|slice:':4' == 'book' %}active{% endif %}" href="{% url 'book_list' %}">Books</a></li>
-        <li class="nav-item"><a class="nav-link {% if url_name|slice:':6' == 'member' %}active{% endif %}" href="{% url 'member_list' %}">Members</a></li>
-        <li class="nav-item"><a class="nav-link {% if url_name|slice:':4' == 'loan' and url_name != 'loan_overdue' %}active{% endif %}" href="{% url 'loan_list' %}">Loans</a></li>
-        <li class="nav-item"><a class="nav-link {% if url_name == 'loan_overdue' %}active{% endif %}" href="{% url 'loan_overdue' %}">Overdue</a></li>
-        <li class="nav-item"><a class="nav-link {% if url_name|slice:':6' == 'rating' %}active{% endif %}" href="{% url 'rating_list' %}">Ratings</a></li>
-      </ul>
-      {% endwith %}
-      <ul class="navbar-nav align-items-lg-center">
-        {% if user.is_staff %}<li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}">Admin</a></li>{% endif %}
-        <li class="nav-item"><span class="navbar-text me-lg-3">{{ user.get_username }}</span></li>
-        <li class="nav-item">
+<body class="{% block body_class %}{% endblock %}">
+{% block body %}
+<div class="app-shell">
+  <div class="sidebar-wrap">
+    <aside class="sidebar offcanvas-lg offcanvas-start" id="sidebar" tabindex="-1" aria-label="Main menu">
+      <div class="sidebar-inner">
+        <div class="sidebar-brand">
+          <a href="{% url 'dashboard' %}"><img src="{% static 'images/libra-name-light.svg' %}" alt="LIBRA"></a>
+          <button type="button" class="btn-close btn-close-white d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Close menu"></button>
+        </div>
+        <nav>
+          <a class="sidebar-link {% if nav_section == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+          <div class="sidebar-label">Library</div>
+          <a class="sidebar-link {% if nav_section == 'book' %}active{% endif %}" href="{% url 'book_list' %}"><i class="bi bi-book"></i> Books</a>
+          <a class="sidebar-link {% if nav_section == 'member' %}active{% endif %}" href="{% url 'member_list' %}"><i class="bi bi-people"></i> Members</a>
+          <div class="sidebar-label">Circulation</div>
+          <a class="sidebar-link {% if nav_section == 'loan' %}active{% endif %}" href="{% url 'loan_list' %}"><i class="bi bi-arrow-left-right"></i> Loans</a>
+          <a class="sidebar-link {% if nav_section == 'overdue' %}active{% endif %}" href="{% url 'loan_overdue' %}"><i class="bi bi-alarm"></i> Overdue
+            {% if overdue_count %}<span class="sidebar-count" title="{{ overdue_count }} overdue loans">{{ overdue_count }}</span>{% endif %}</a>
+          <a class="sidebar-link {% if nav_section == 'rating' %}active{% endif %}" href="{% url 'rating_list' %}"><i class="bi bi-star"></i> Ratings</a>
+          {% if user.is_staff %}
+          <div class="sidebar-label">System</div>
+          <a class="sidebar-link" href="{% url 'admin:index' %}"><i class="bi bi-gear"></i> Django admin</a>
+          {% endif %}
+        </nav>
+        <div class="sidebar-footer">
+          <div class="sidebar-user">
+            <span class="avatar">{{ user.get_username|slice:":2" }}</span>
+            <div class="lh-sm"><div class="fw-semibold">{{ user.get_username }}</div><small class="opacity-75">Librarian</small></div>
+          </div>
           <form method="post" action="{% url 'logout' %}">{% csrf_token %}
-            <button class="btn btn-outline-light btn-sm" type="submit">Log out</button>
+            <button class="btn btn-logout w-100 text-start" type="submit"><i class="bi bi-box-arrow-left me-2"></i>Log out</button>
           </form>
-        </li>
-      </ul>
-    </div>
+        </div>
+      </div>
+    </aside>
   </div>
-</nav>
-{% endif %}
-<main class="container pb-5">
-  {% for message in messages %}
-  <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-    {{ message }}
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+  <div class="app-main">
+    <header class="topbar">
+      <button class="btn btn-outline-secondary d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar" aria-label="Open menu"><i class="bi bi-list"></i></button>
+      <a class="d-lg-none" href="{% url 'dashboard' %}"><img src="{% static 'images/LIBRA_Logo.svg' %}" alt="LIBRA" height="36"></a>
+      <form class="topbar-search input-icon d-none d-sm-block" method="get" action="{% url 'book_list' %}" role="search">
+        <i class="bi bi-search"></i>
+        <input class="form-control" type="search" name="q" placeholder="Search books by title or author" aria-label="Search books" value="{% if nav_section == 'book' %}{{ request.GET.q }}{% endif %}">
+      </form>
+      <div class="ms-auto d-flex gap-2">
+        <a class="btn btn-success" href="{% url 'loan_create' %}"><i class="bi bi-plus-lg me-1"></i><span class="d-none d-md-inline">Lend a book</span><span class="d-md-none">Lend</span></a>
+      </div>
+    </header>
+
+    <main class="app-content">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
+        <i class="bi {% if message.tags == 'danger' %}bi-exclamation-circle{% else %}bi-check-circle{% endif %}"></i>
+        <div>{{ message }}</div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+      {% endfor %}
+      {% block content %}{% endblock %}
+    </main>
   </div>
-  {% endfor %}
-  {% block content %}{% endblock %}
-</main>
+</div>
+{% endblock %}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

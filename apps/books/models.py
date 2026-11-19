@@ -51,5 +51,12 @@ class Book(models.Model):
         return reverse("book_detail", args=[self.pk])
 
     @property
+    def cover_url(self):
+        """The cover image, or "" when the dataset only has a "no photo" image."""
+        if not self.image_url or "nophoto" in self.image_url:
+            return ""
+        return self.image_url
+
+    @property
     def tag_list(self):
         return [tag.strip() for tag in self.tags.split(",") if tag.strip()]

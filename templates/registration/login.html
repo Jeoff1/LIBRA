@@ -1,30 +1,48 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Log in{% endblock %}
-{% block content %}
-<div class="row justify-content-center mt-5">
-  <div class="col-sm-9 col-md-6 col-lg-4">
-    <div class="card shadow-sm">
-      <div class="card-body p-4">
-        <h1 class="h3 mb-1">LIBRA</h1>
-        <p class="text-body-secondary mb-4">Librarian log in</p>
-        {% if form.errors %}
-        <div class="alert alert-danger">Your username and password didn't match. Please try again.</div>
-        {% endif %}
-        <form method="post">
-          {% csrf_token %}
-          <div class="mb-3">
-            <label class="form-label" for="id_username">Username</label>
-            <input class="form-control" type="text" name="username" id="id_username" autofocus required value="{{ form.username.value|default:'' }}">
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="id_password">Password</label>
-            <input class="form-control" type="password" name="password" id="id_password" required>
-          </div>
-          <input type="hidden" name="next" value="{{ next }}">
-          <button class="btn btn-primary w-100" type="submit">Log in</button>
-        </form>
-      </div>
+{% block body_class %}public{% endblock %}
+{% block body %}
+<div class="login-shell">
+  <section class="login-brand d-none d-lg-flex">
+    <a href="{% url 'landing' %}"><img src="{% static 'images/libra-logo-light.svg' %}" alt="LIBRA – Library Inventory and Book Recommendation Application" height="96"></a>
+    <blockquote class="my-5">“A library is not a luxury but one of the necessities of life.”
+      <footer class="fs-6 mt-3 opacity-75" style="font-family: var(--libra-sans)">— Henry Ward Beecher</footer>
+    </blockquote>
+    <small class="opacity-75">Library Inventory and Book Recommendation Application</small>
+  </section>
+
+  <section class="login-form-wrap">
+    <div class="login-card">
+      <a class="d-lg-none d-block text-center mb-4" href="{% url 'landing' %}"><img src="{% static 'images/libra-name-dark.svg' %}" alt="LIBRA" height="56"></a>
+      <h1 class="mb-1">Welcome back</h1>
+      <p class="text-body-secondary mb-4">Log in with your librarian account.</p>
+
+      {% if form.errors %}
+      <div class="alert alert-danger d-flex gap-2 align-items-center"><i class="bi bi-exclamation-circle"></i>Your username and password didn't match. Please try again.</div>
+      {% endif %}
+      {% if next and not form.errors and user.is_anonymous %}
+      <div class="alert alert-info d-flex gap-2 align-items-center"><i class="bi bi-lock"></i>Please log in to see that page.</div>
+      {% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label" for="id_username">Username</label>
+          <div class="input-icon"><i class="bi bi-person"></i>
+            <input class="form-control form-control-lg {% if form.errors %}is-invalid{% endif %}" type="text" name="username" id="id_username" autocomplete="username" autofocus required value="{{ form.username.value|default:'' }}"></div>
+        </div>
+        <div class="mb-4">
+          <label class="form-label" for="id_password">Password</label>
+          <div class="input-icon"><i class="bi bi-key"></i>
+            <input class="form-control form-control-lg {% if form.errors %}is-invalid{% endif %}" type="password" name="password" id="id_password" autocomplete="current-password" required></div>
+        </div>
+        <input type="hidden" name="next" value="{{ next }}">
+        <button class="btn btn-primary btn-lg w-100" type="submit">Log in</button>
+      </form>
+      <p class="text-center mt-4 mb-0"><a href="{% url 'landing' %}"><i class="bi bi-arrow-left me-1"></i>Back to home</a></p>
+      <p class="text-center text-body-secondary small mt-3">No account yet? Ask your administrator, or run <code>python manage.py createsuperuser</code>.</p>
     </div>
-  </div>
+  </section>
 </div>
 {% endblock %}

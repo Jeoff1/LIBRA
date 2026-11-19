@@ -4,6 +4,7 @@ A small library system built with Django and MySQL/MariaDB. Librarians log in to
 
 ## Features
 
+- **Landing page** at `/`: a public front page that introduces LIBRA and links to the librarian login.
 - **Books**: list with search (title/author), year filter and pages; add, view, edit, delete.
 - **Members**: list with search; add, view, edit, delete.
 - **Loans**: lend a book (due in 14 days by default), return it, change the due date, delete. Borrowing takes a copy off the shelf and returning puts it back. Borrowing is blocked when no copies are left.
@@ -12,7 +13,7 @@ A small library system built with Django and MySQL/MariaDB. Librarians log in to
 - **Recommendations**: "Similar books" on each book page, and "Recommended for this member" on each member page.
 - **Dashboard**: counts of books, members, active and overdue loans, plus the 5 most borrowed books.
 
-Members don't log in. Librarians are Django staff users, and every page except the login page needs a logged-in user.
+Members don't log in. Librarians are Django staff users, and every page except the landing and login pages needs a logged-in user. After logging in, librarians land on the dashboard at `/dashboard/`.
 
 ## Requirements
 
@@ -96,7 +97,7 @@ python manage.py createsuperuser     # your librarian login
 python manage.py runserver
 ```
 
-Open <http://127.0.0.1:8000/> and log in with the superuser you created.
+Open <http://127.0.0.1:8000/>, click **Librarian log in**, and use the superuser you created.
 
 ## Running the tests
 
@@ -130,9 +131,18 @@ apps/
                  dataset.py (CSV reading), recommender.py
   members/       Member model and pages
   loans/         Loan and Rating models, borrow/return, overdue list, ratings
-templates/       base layout, login page, shared form/pagination/delete pages
+templates/       app layout (sidebar + top bar), login page, shared form/pagination/delete pages
+static/css/      libra.css: the LIBRA theme on top of Bootstrap 5
+static/images/   logos (originals plus light/dark and name-only variants)
 data/            goodbooks-10k CSVs (not in git)
 ml_models/       trained recommender (not in git)
 ```
+
+## Design
+
+- **Palette:** brown `#5c3a26`, sage `#a3b18a`, cream `#f1e7d3`, plus darker and lighter shades of each for hover states and readable text. All colours live as CSS variables at the top of `static/css/libra.css`.
+- **Fonts:** Cormorant Garamond for headings (it matches the logo lettering) and DM Sans for text, from Google Fonts. Icons are Bootstrap Icons.
+- **Logos:** `LIBRALogowithtext.svg` and `LIBRA_Logo.svg` are the originals. The `libra-*-light.svg` variants are for brown backgrounds and the `libra-*-dark.svg` variants for cream ones. The `libra-name-*` versions drop the tagline so they stay legible at small sizes.
+- **Covers:** books without a cover in the dataset get a brown placeholder cover with a sage bookmark, borrowed from the logo.
 
 The Django admin is at <http://127.0.0.1:8000/admin/> for staff users.

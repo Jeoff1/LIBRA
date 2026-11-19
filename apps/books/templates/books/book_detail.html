@@ -7,38 +7,34 @@
 </ol></nav>
 
 <div class="card shadow-sm mb-4">
-  <div class="card-body">
+  <div class="card-body p-4">
     <div class="row g-4">
-      {% if book.image_url %}
-      <div class="col-sm-auto"><img class="cover-lg rounded shadow-sm" src="{{ book.image_url }}" alt="Cover of {{ book.title }}"></div>
-      {% endif %}
+      <div class="col-sm-auto text-center">{% include "books/_cover.html" with size="lg" %}</div>
       <div class="col">
-        <h1 class="h3">{{ book.title }}</h1>
-        <p class="lead mb-3">{{ book.authors }}</p>
-        <dl class="row mb-2">
-          <dt class="col-sm-4 col-lg-3">Published</dt><dd class="col-sm-8 col-lg-9">{{ book.publication_year|default_if_none:"—" }}</dd>
-          <dt class="col-sm-4 col-lg-3">ISBN</dt><dd class="col-sm-8 col-lg-9">{{ book.isbn|default:"—" }}</dd>
-          <dt class="col-sm-4 col-lg-3">Language</dt><dd class="col-sm-8 col-lg-9">{{ book.language_code|default:"—" }}</dd>
-          <dt class="col-sm-4 col-lg-3">Average rating</dt><dd class="col-sm-8 col-lg-9">{{ book.average_rating|default_if_none:"—" }}</dd>
-          <dt class="col-sm-4 col-lg-3">Copies available</dt>
-          <dd class="col-sm-8 col-lg-9">
-            <span class="badge {% if book.available_copies %}text-bg-success{% else %}text-bg-secondary{% endif %}">{{ book.available_copies }} of {{ book.total_copies }}</span>
-          </dd>
-          {% if book.goodreads_book_id %}
-          <dt class="col-sm-4 col-lg-3">Goodreads ID</dt><dd class="col-sm-8 col-lg-9">{{ book.goodreads_book_id }}</dd>
-          {% endif %}
+        <h1 class="h3 mb-1">{{ book.title }}</h1>
+        <p class="fs-5 text-body-secondary mb-3">{{ book.authors }}</p>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <span class="badge {% if book.available_copies %}text-bg-success{% else %}text-bg-secondary{% endif %} fs-6">
+            <i class="bi {% if book.available_copies %}bi-check-circle{% else %}bi-hourglass-split{% endif %} me-1"></i>{{ book.available_copies }} of {{ book.total_copies }} available</span>
+          {% if book.average_rating %}<span class="badge text-bg-light border fs-6"><i class="bi bi-star-fill stars me-1"></i>{{ book.average_rating }} on Goodreads</span>{% endif %}
+        </div>
+        <dl class="row mb-3 small">
+          <dt class="col-5 col-md-3 text-body-secondary fw-semibold">Published</dt><dd class="col-7 col-md-9">{{ book.publication_year|default_if_none:"—" }}</dd>
+          <dt class="col-5 col-md-3 text-body-secondary fw-semibold">ISBN</dt><dd class="col-7 col-md-9">{{ book.isbn|default:"—" }}</dd>
+          <dt class="col-5 col-md-3 text-body-secondary fw-semibold">Language</dt><dd class="col-7 col-md-9">{{ book.language_code|default:"—" }}</dd>
+          {% if book.goodreads_book_id %}<dt class="col-5 col-md-3 text-body-secondary fw-semibold">Goodreads ID</dt><dd class="col-7 col-md-9">{{ book.goodreads_book_id }}</dd>{% endif %}
         </dl>
         {% if book.tag_list %}
-        <div class="mb-3">{% for tag in book.tag_list %}<span class="badge rounded-pill text-bg-light border me-1">{{ tag }}</span>{% endfor %}</div>
+        <div class="mb-3">{% for tag in book.tag_list %}<span class="tag-chip">{{ tag }}</span>{% endfor %}</div>
         {% endif %}
         <div class="d-flex flex-wrap gap-2">
           {% if book.available_copies %}
-          <a class="btn btn-success" href="{% url 'loan_create' %}?book={{ book.pk }}">Lend this book</a>
+          <a class="btn btn-success" href="{% url 'loan_create' %}?book={{ book.pk }}"><i class="bi bi-box-arrow-up-right me-1"></i>Lend this book</a>
           {% else %}
           <button class="btn btn-success" type="button" disabled>No copies available</button>
           {% endif %}
-          <a class="btn btn-outline-primary" href="{% url 'book_update' book.pk %}">Edit</a>
-          <a class="btn btn-outline-danger" href="{% url 'book_delete' book.pk %}">Delete</a>
+          <a class="btn btn-outline-primary" href="{% url 'book_update' book.pk %}"><i class="bi bi-pencil me-1"></i>Edit</a>
+          <a class="btn btn-outline-danger" href="{% url 'book_delete' book.pk %}"><i class="bi bi-trash me-1"></i>Delete</a>
         </div>
       </div>
     </div>
@@ -47,40 +43,46 @@
 
 <div class="row g-4">
   <div class="col-lg-6">
-    <h2 class="h5">On loan now</h2>
-    {% if active_loans %}
-    <ul class="list-group shadow-sm">
-      {% for loan in active_loans %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span><a href="{{ loan.member.get_absolute_url }}">{{ loan.member }}</a> · due {{ loan.due_date }}</span>
-        {% if loan.is_overdue %}<span class="badge text-bg-danger">{{ loan.days_overdue }} days overdue</span>{% endif %}
-      </li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    <p class="text-body-secondary">No copies are on loan.</p>
-    {% endif %}
+    <div class="card shadow-sm h-100"><div class="card-body p-4">
+      <h2 class="h5">On loan now</h2>
+      {% if active_loans %}
+      <ul class="list-unstyled mb-0">
+        {% for loan in active_loans %}
+        <li class="d-flex align-items-center gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+          <span class="avatar">{{ loan.member.initials }}</span>
+          <span class="flex-grow-1 lh-sm"><a class="fw-semibold text-decoration-none" href="{{ loan.member.get_absolute_url }}">{{ loan.member }}</a><br>
+            <small class="text-body-secondary">due {{ loan.due_date }}</small></span>
+          {% if loan.is_overdue %}<span class="badge text-bg-danger">{{ loan.days_overdue }}d late</span>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-body-secondary mb-0">No copies are on loan.</p>
+      {% endif %}
+    </div></div>
   </div>
   <div class="col-lg-6">
-    <h2 class="h5">Member ratings</h2>
-    {% if ratings %}
-    <ul class="list-group shadow-sm">
-      {% for rating in ratings %}
-      <li class="list-group-item d-flex justify-content-between">
-        <a href="{{ rating.member.get_absolute_url }}">{{ rating.member }}</a>
-        <span>{{ rating.score }} / 5</span>
-      </li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    <p class="text-body-secondary">No member has rated this book yet.</p>
-    {% endif %}
+    <div class="card shadow-sm h-100"><div class="card-body p-4">
+      <h2 class="h5">Member ratings</h2>
+      {% if ratings %}
+      <ul class="list-unstyled mb-0">
+        {% for rating in ratings %}
+        <li class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
+          <a class="fw-semibold text-decoration-none" href="{{ rating.member.get_absolute_url }}">{{ rating.member }}</a>
+          {% include "loans/_stars.html" with score=rating.score %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-body-secondary mb-0">No member has rated this book yet.</p>
+      {% endif %}
+    </div></div>
   </div>
 </div>
 
-<h2 class="h5 mt-4">Similar books</h2>
+<h2 class="h5 mt-5 mb-3"><i class="bi bi-stars text-success me-1"></i>Similar books</h2>
 {% if not recommender_ready %}
-<div class="alert alert-secondary">Recommendations not trained yet.</div>
+<div class="alert alert-secondary"><i class="bi bi-info-circle me-1"></i>Recommendations not trained yet.</div>
 {% elif not book.goodreads_book_id %}
 <p class="text-body-secondary">Similar books are only available for books imported from the dataset.</p>
 {% elif similar %}

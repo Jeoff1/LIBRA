@@ -1,29 +1,32 @@
 <div class="table-responsive bg-body rounded shadow-sm">
   <table class="table table-hover align-middle mb-0">
     <thead>
-      <tr><th>Book</th><th>Member</th><th>Borrowed</th><th>Due</th><th>Status</th><th class="text-end">Actions</th></tr>
+      <tr><th>Book</th><th class="d-none d-md-table-cell">Member</th><th class="d-none d-md-table-cell">Borrowed</th><th class="d-none d-sm-table-cell">Due</th><th class="d-none d-sm-table-cell">Status</th><th class="text-end">Actions</th></tr>
     </thead>
     <tbody>
       {% for loan in loans %}
       <tr>
-        <td><a href="{{ loan.book.get_absolute_url }}">{{ loan.book.title|truncatechars:45 }}</a></td>
-        <td><a href="{{ loan.member.get_absolute_url }}">{{ loan.member }}</a></td>
-        <td>{{ loan.borrow_date }}</td>
-        <td>{{ loan.due_date }}</td>
-        <td>
+        <td><div class="d-flex align-items-center gap-2">{% include "books/_cover.html" with book=loan.book size="sm" %}
+          <div class="min-w-0"><a href="{{ loan.book.get_absolute_url }}">{{ loan.book.title|truncatechars:45 }}</a>
+            <div class="small d-md-none"><a class="fw-normal" href="{{ loan.member.get_absolute_url }}">{{ loan.member }}</a> · due {{ loan.due_date }}</div>
+            {% if loan.is_overdue %}<span class="badge text-bg-danger d-sm-none">{{ loan.days_overdue }}d overdue</span>{% elif not loan.is_active %}<span class="badge text-bg-secondary d-sm-none">Returned</span>{% endif %}</div></div></td>
+        <td class="d-none d-md-table-cell"><a href="{{ loan.member.get_absolute_url }}">{{ loan.member }}</a></td>
+        <td class="d-none d-md-table-cell">{{ loan.borrow_date }}</td>
+        <td class="d-none d-sm-table-cell">{{ loan.due_date }}</td>
+        <td class="d-none d-sm-table-cell">
           {% if not loan.is_active %}<span class="badge text-bg-secondary">Returned {{ loan.return_date }}</span>
-          {% elif loan.is_overdue %}<span class="badge text-bg-danger">{{ loan.days_overdue }} days overdue</span>
+          {% elif loan.is_overdue %}<span class="badge text-bg-danger">{{ loan.days_overdue }}d overdue</span>
           {% else %}<span class="badge text-bg-success">On loan</span>{% endif %}
         </td>
         <td class="text-end text-nowrap">
           {% if loan.is_active %}
           <form class="d-inline" method="post" action="{% url 'loan_return' loan.pk %}">
             {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
-            <button class="btn btn-sm btn-success" type="submit">Return</button>
+            <button class="btn btn-sm btn-success" type="submit"><i class="bi bi-box-arrow-in-down-left"></i><span class="d-none d-lg-inline ms-1">Return</span><span class="visually-hidden d-lg-none">Return</span></button>
           </form>
-          <a class="btn btn-sm btn-outline-primary" href="{% url 'loan_update' loan.pk %}?next={{ request.get_full_path|urlencode }}">Edit</a>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'loan_update' loan.pk %}?next={{ request.get_full_path|urlencode }}" title="Change due date"><i class="bi bi-calendar-event"></i><span class="visually-hidden">Change due date</span></a>
           {% endif %}
-          <a class="btn btn-sm btn-outline-danger" href="{% url 'loan_delete' loan.pk %}">Delete</a>
+          <a class="btn btn-sm btn-outline-danger" href="{% url 'loan_delete' loan.pk %}" title="Delete loan"><i class="bi bi-trash"></i><span class="visually-hidden">Delete loan</span></a>
         </td>
       </tr>
       {% endfor %}

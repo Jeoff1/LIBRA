@@ -1,43 +1,84 @@
 {% extends "base.html" %}
+{% load humanize %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <h1 class="h3 mb-0">Dashboard</h1>
-  <div class="d-flex gap-2">
-    <a class="btn btn-success" href="{% url 'loan_create' %}">Lend a book</a>
-    <a class="btn btn-outline-primary" href="{% url 'member_create' %}">Add member</a>
+<div class="page-header">
+  <div>
+    <h1 class="h3 mb-0">{{ greeting }}, {{ user.get_username }}</h1>
+    <p>{{ today|date:"l, j F Y" }} · here's the library today.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-primary" href="{% url 'member_create' %}"><i class="bi bi-person-plus me-1"></i>Add member</a>
+    <a class="btn btn-outline-primary" href="{% url 'book_create' %}"><i class="bi bi-journal-plus me-1"></i>Add book</a>
   </div>
 </div>
 
-<div class="row row-cols-2 row-cols-lg-4 g-3 mb-4">
-  {% for label, count, url_name, colour in stats %}
+<div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-3 mb-4">
+  {% for label, count, url_name, icon, colour in stats %}
   <div class="col">
-    <a class="card h-100 shadow-sm text-decoration-none border-start border-4 border-{{ colour }}" href="{% url url_name %}">
-      <div class="card-body">
-        <div class="text-body-secondary small text-uppercase">{{ label }}</div>
-        <div class="display-6 fw-semibold text-{{ colour }}-emphasis">{{ count }}</div>
+    <a class="card stat-card shadow-sm" href="{% url url_name %}">
+      <div class="card-body d-flex align-items-center gap-3 p-4">
+        <span class="stat-icon {{ colour }}"><i class="bi {{ icon }}"></i></span>
+        <div>
+          <div class="stat-value">{{ count|intcomma }}</div>
+          <div class="stat-label">{{ label }}</div>
+        </div>
       </div>
     </a>
   </div>
   {% endfor %}
 </div>
 
-<div class="card shadow-sm">
-  <div class="card-body">
-    <h2 class="h5">Most borrowed books</h2>
-    {% if most_borrowed %}
-    <ol class="list-group list-group-numbered list-group-flush">
-      {% for book in most_borrowed %}
-      <li class="list-group-item d-flex justify-content-between align-items-center gap-2">
-        <span class="me-auto ms-2"><a href="{{ book.get_absolute_url }}">{{ book.title }}</a><br>
-          <small class="text-body-secondary">{{ book.authors|truncatechars:60 }}</small></span>
-        <span class="badge text-bg-primary rounded-pill">{{ book.times_borrowed }} loan{{ book.times_borrowed|pluralize }}</span>
-      </li>
-      {% endfor %}
-    </ol>
-    {% else %}
-    <p class="text-body-secondary mb-0">No books have been borrowed yet.</p>
-    {% endif %}
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card shadow-sm h-100">
+      <div class="card-body p-4">
+        <h2 class="h5 mb-3">Most borrowed books</h2>
+        {% if most_borrowed %}
+        <ol class="list-unstyled mb-0">
+          {% for book in most_borrowed %}
+          <li class="d-flex align-items-center gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+            <span class="rank">{{ forloop.counter }}</span>
+            {% include "books/_cover.html" with size="sm" %}
+            <div class="flex-grow-1 min-w-0">
+              <a class="fw-semibold text-decoration-none" href="{{ book.get_absolute_url }}">{{ book.title|truncatechars:60 }}</a>
+              <div class="small text-body-secondary">{{ book.authors|truncatechars:50 }}</div>
+            </div>
+            <span class="badge text-bg-primary">{{ book.times_borrowed }} loan{{ book.times_borrowed|pluralize }}</span>
+          </li>
+          {% endfor %}
+        </ol>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-book"></i>No books have been borrowed yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card shadow-sm h-100">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="h5 mb-0">Most overdue</h2>
+          <a class="small fw-semibold" href="{% url 'loan_overdue' %}">See all <i class="bi bi-arrow-right"></i></a>
+        </div>
+        {% if overdue %}
+        <ul class="list-unstyled mb-0">
+          {% for loan in overdue %}
+          <li class="d-flex align-items-center gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+            <span class="avatar">{{ loan.member.initials }}</span>
+            <div class="flex-grow-1 min-w-0 lh-sm">
+              <a class="fw-semibold text-decoration-none" href="{{ loan.member.get_absolute_url }}">{{ loan.member }}</a>
+              <div class="small text-body-secondary text-truncate">{{ loan.book.title }}</div>
+            </div>
+            <span class="badge text-bg-danger">{{ loan.days_overdue }}d late</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-check2-circle"></i>Nothing is overdue. Nice.</div>
+        {% endif %}
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}

@@ -20,3 +20,9 @@ class Member(models.Model):
 
     def get_absolute_url(self):
         return reverse("member_detail", args=[self.pk])
+
+    @property
+    def initials(self):
+        """'Ann Lee-Park' -> 'AL'."""
+        parts = self.name.split()
+        return "".join(part[0] for part in parts[:1] + parts[1:][-1:]).upper()

@@ -1,22 +1,29 @@
 {% extends "base.html" %}
+{% load humanize %}
 {% block title %}Books{% endblock %}
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <h1 class="h3 mb-0">Books <span class="text-body-secondary fs-6">({{ page_obj.paginator.count }})</span></h1>
-  <a class="btn btn-primary" href="{% url 'book_create' %}">+ Add book</a>
+<div class="page-header">
+  <div>
+    <h1 class="h3 mb-0">Books</h1>
+    <p>{{ page_obj.paginator.count|intcomma }} {% if q or year %}matching{% else %}in the catalogue{% endif %}</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'book_create' %}"><i class="bi bi-plus-lg me-1"></i>Add book</a>
 </div>
 
-<form method="get" class="row g-2 mb-3">
-  <div class="col-md-6">
-    <input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Search title or author">
-  </div>
-  <div class="col-6 col-md-2">
-    <input class="form-control {% if year_error %}is-invalid{% endif %}" type="text" inputmode="numeric" name="year" value="{{ year }}" placeholder="Year">
-    {% if year_error %}<div class="invalid-feedback">{{ year_error }}</div>{% endif %}
-  </div>
-  <div class="col-6 col-md-4 d-flex gap-2">
-    <button class="btn btn-outline-primary" type="submit">Search</button>
-    {% if q or year %}<a class="btn btn-outline-secondary" href="{% url 'book_list' %}">Clear</a>{% endif %}
+<form method="get" class="card shadow-sm mb-3">
+  <div class="card-body row g-2 align-items-start">
+    <div class="col-md-7 input-icon">
+      <i class="bi bi-search"></i>
+      <input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Search title or author" aria-label="Search title or author">
+    </div>
+    <div class="col-6 col-md-2">
+      <input class="form-control {% if year_error %}is-invalid{% endif %}" type="text" inputmode="numeric" name="year" value="{{ year }}" placeholder="Year" aria-label="Publication year">
+      {% if year_error %}<div class="invalid-feedback">{{ year_error }}</div>{% endif %}
+    </div>
+    <div class="col-6 col-md-3 d-flex gap-2">
+      <button class="btn btn-primary flex-grow-1" type="submit">Search</button>
+      {% if q or year %}<a class="btn btn-outline-secondary" href="{% url 'book_list' %}" title="Clear filters"><i class="bi bi-x-lg"></i></a>{% endif %}
+    </div>
   </div>
 </form>
 
@@ -24,19 +31,20 @@
 <div class="table-responsive bg-body rounded shadow-sm">
   <table class="table table-hover align-middle mb-0">
     <thead>
-      <tr><th></th><th>Title</th><th>Authors</th><th>Year</th><th>Rating</th><th>Available</th></tr>
+      <tr><th style="width: 64px"></th><th>Title</th><th class="d-none d-md-table-cell">Authors</th><th>Year</th><th class="d-none d-sm-table-cell">Rating</th><th>Available</th></tr>
     </thead>
     <tbody>
       {% for book in page_obj %}
       <tr>
-        <td>{% if book.image_url %}<img class="cover-sm rounded" src="{{ book.image_url }}" alt="" loading="lazy">{% endif %}</td>
-        <td><a href="{{ book.get_absolute_url }}">{{ book.title }}</a></td>
-        <td>{{ book.authors|truncatechars:60 }}</td>
-        <td>{{ book.publication_year|default_if_none:"—" }}</td>
-        <td>{{ book.average_rating|default_if_none:"—" }}</td>
-        <td>
+        <td>{% include "books/_cover.html" with size="sm" %}</td>
+        <td><a href="{{ book.get_absolute_url }}">{{ book.title }}</a>
+          <div class="small text-body-secondary d-md-none">{{ book.authors|truncatechars:40 }}</div></td>
+        <td class="d-none d-md-table-cell text-body-secondary">{{ book.authors|truncatechars:60 }}</td>
+        <td class="text-nowrap">{{ book.publication_year|default_if_none:"—" }}</td>
+        <td class="d-none d-sm-table-cell text-nowrap">{% if book.average_rating %}<i class="bi bi-star-fill stars small"></i> {{ book.average_rating }}{% else %}—{% endif %}</td>
+        <td class="text-nowrap">
           <span class="badge {% if book.available_copies %}text-bg-success{% else %}text-bg-secondary{% endif %}">
-            {{ book.available_copies }} / {{ book.total_copies }}
+            {{ book.available_copies }} of {{ book.total_copies }}
           </span>
         </td>
       </tr>
@@ -44,8 +52,8 @@
     </tbody>
   </table>
 </div>
-<div class="mt-3">{% include "includes/pagination.html" %}</div>
+<div class="mt-4">{% include "includes/pagination.html" %}</div>
 {% else %}
-<div class="alert alert-info">No books match your search.</div>
+<div class="card shadow-sm"><div class="empty-state"><i class="bi bi-search"></i>No books match your search.</div></div>
 {% endif %}
 {% endblock %}

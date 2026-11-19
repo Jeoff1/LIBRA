@@ -7,78 +7,91 @@
 </ol></nav>
 
 <div class="card shadow-sm mb-4">
-  <div class="card-body">
-    <h1 class="h3">{{ member.name }}</h1>
-    <dl class="row mb-3">
-      <dt class="col-sm-3 col-lg-2">Email</dt><dd class="col-sm-9 col-lg-10"><a href="mailto:{{ member.email }}">{{ member.email }}</a></dd>
-      <dt class="col-sm-3 col-lg-2">Phone</dt><dd class="col-sm-9 col-lg-10">{{ member.phone|default:"—" }}</dd>
-      <dt class="col-sm-3 col-lg-2">Joined</dt><dd class="col-sm-9 col-lg-10">{{ member.date_joined }}</dd>
-    </dl>
-    <div class="d-flex flex-wrap gap-2">
-      <a class="btn btn-success" href="{% url 'loan_create' %}?member={{ member.pk }}">Lend a book</a>
-      <a class="btn btn-outline-success" href="{% url 'rating_create' %}?member={{ member.pk }}">Add rating</a>
-      <a class="btn btn-outline-primary" href="{% url 'member_update' member.pk %}">Edit</a>
-      <a class="btn btn-outline-danger" href="{% url 'member_delete' member.pk %}">Delete</a>
+  <div class="card-body p-4 d-md-flex align-items-center gap-4">
+    <span class="avatar avatar-lg mb-3 mb-md-0">{{ member.initials }}</span>
+    <div class="flex-grow-1">
+      <h1 class="h3 mb-1">{{ member.name }}</h1>
+      <div class="d-flex flex-wrap gap-3 text-body-secondary">
+        <span><i class="bi bi-envelope me-1"></i><a href="mailto:{{ member.email }}">{{ member.email }}</a></span>
+        {% if member.phone %}<span><i class="bi bi-telephone me-1"></i>{{ member.phone }}</span>{% endif %}
+        <span><i class="bi bi-calendar3 me-1"></i>Joined {{ member.date_joined }}</span>
+      </div>
+    </div>
+    <div class="d-flex flex-wrap gap-2 mt-3 mt-md-0">
+      <a class="btn btn-success" href="{% url 'loan_create' %}?member={{ member.pk }}"><i class="bi bi-box-arrow-up-right me-1"></i>Lend a book</a>
+      <a class="btn btn-outline-success" href="{% url 'rating_create' %}?member={{ member.pk }}"><i class="bi bi-star me-1"></i>Add rating</a>
+      <a class="btn btn-outline-primary" href="{% url 'member_update' member.pk %}" title="Edit"><i class="bi bi-pencil"></i><span class="visually-hidden">Edit</span></a>
+      <a class="btn btn-outline-danger" href="{% url 'member_delete' member.pk %}" title="Delete"><i class="bi bi-trash"></i><span class="visually-hidden">Delete</span></a>
     </div>
   </div>
 </div>
 
 <div class="row g-4">
   <div class="col-lg-6">
-    <h2 class="h5">Books on loan ({{ active_loans|length }})</h2>
-    {% if active_loans %}
-    <ul class="list-group shadow-sm mb-4">
-      {% for loan in active_loans %}
-      <li class="list-group-item d-flex justify-content-between align-items-center gap-2">
-        <span><a href="{{ loan.book.get_absolute_url }}">{{ loan.book.title|truncatechars:50 }}</a><br>
-          <small class="text-body-secondary">borrowed {{ loan.borrow_date }} · due {{ loan.due_date }}</small></span>
-        {% if loan.is_overdue %}<span class="badge text-bg-danger">{{ loan.days_overdue }} days overdue</span>{% endif %}
-      </li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    <p class="text-body-secondary">No books on loan.</p>
-    {% endif %}
+    <div class="card shadow-sm h-100"><div class="card-body p-4">
+      <h2 class="h5">Books on loan <span class="text-body-secondary fw-normal">({{ active_loans|length }})</span></h2>
+      {% if active_loans %}
+      <ul class="list-unstyled mb-4">
+        {% for loan in active_loans %}
+        <li class="d-flex align-items-center gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+          {% include "books/_cover.html" with book=loan.book size="sm" %}
+          <span class="flex-grow-1 min-w-0 lh-sm"><a class="fw-semibold text-decoration-none" href="{{ loan.book.get_absolute_url }}">{{ loan.book.title|truncatechars:50 }}</a><br>
+            <small class="text-body-secondary">borrowed {{ loan.borrow_date }} · due {{ loan.due_date }}</small></span>
+          {% if loan.is_overdue %}<span class="badge text-bg-danger">{{ loan.days_overdue }}d late</span>{% endif %}
+          <form method="post" action="{% url 'loan_return' loan.pk %}">{% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button class="btn btn-sm btn-success" type="submit">Return</button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-body-secondary">No books on loan.</p>
+      {% endif %}
 
-    <h2 class="h5">Loan history ({{ past_loans|length }})</h2>
-    {% if past_loans %}
-    <ul class="list-group shadow-sm">
-      {% for loan in past_loans %}
-      <li class="list-group-item">
-        <a href="{{ loan.book.get_absolute_url }}">{{ loan.book.title|truncatechars:50 }}</a><br>
-        <small class="text-body-secondary">{{ loan.borrow_date }} → returned {{ loan.return_date }}</small>
-      </li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    <p class="text-body-secondary">No returned books yet.</p>
-    {% endif %}
+      <h2 class="h5">Loan history <span class="text-body-secondary fw-normal">({{ past_loans|length }})</span></h2>
+      {% if past_loans %}
+      <ul class="list-unstyled mb-0">
+        {% for loan in past_loans %}
+        <li class="d-flex align-items-center gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+          {% include "books/_cover.html" with book=loan.book size="sm" %}
+          <span class="lh-sm"><a class="fw-semibold text-decoration-none" href="{{ loan.book.get_absolute_url }}">{{ loan.book.title|truncatechars:50 }}</a><br>
+            <small class="text-body-secondary">{{ loan.borrow_date }} → returned {{ loan.return_date }}</small></span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-body-secondary mb-0">No returned books yet.</p>
+      {% endif %}
+    </div></div>
   </div>
 
   <div class="col-lg-6">
-    <h2 class="h5">Ratings ({{ ratings|length }})</h2>
-    {% if ratings %}
-    <ul class="list-group shadow-sm">
-      {% for rating in ratings %}
-      <li class="list-group-item d-flex justify-content-between">
-        <a href="{{ rating.book.get_absolute_url }}">{{ rating.book.title|truncatechars:50 }}</a>
-        <span>{{ rating.score }} / 5</span>
-      </li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    <p class="text-body-secondary">No ratings yet.</p>
-    {% endif %}
+    <div class="card shadow-sm h-100"><div class="card-body p-4">
+      <h2 class="h5">Ratings <span class="text-body-secondary fw-normal">({{ ratings|length }})</span></h2>
+      {% if ratings %}
+      <ul class="list-unstyled mb-0">
+        {% for rating in ratings %}
+        <li class="d-flex justify-content-between align-items-center gap-3 py-2 {% if not forloop.last %}border-bottom{% endif %}">
+          <a class="fw-semibold text-decoration-none" href="{{ rating.book.get_absolute_url }}">{{ rating.book.title|truncatechars:50 }}</a>
+          {% include "loans/_stars.html" with score=rating.score %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-body-secondary mb-0">No ratings yet.</p>
+      {% endif %}
+    </div></div>
   </div>
 </div>
 
-<h2 class="h5 mt-4">Recommended for this member</h2>
+<h2 class="h5 mt-5 mb-1"><i class="bi bi-stars text-success me-1"></i>Recommended for this member</h2>
 {% if not recommender_ready %}
-<div class="alert alert-secondary">Recommendations not trained yet.</div>
+<div class="alert alert-secondary mt-3"><i class="bi bi-info-circle me-1"></i>Recommendations not trained yet.</div>
 {% elif recommendations %}
-<p class="text-body-secondary small">Based on the books {{ member.name }} rated 4–5 stars, or else the books they have borrowed.</p>
+<p class="text-body-secondary small mb-3">Based on the books {{ member.name }} rated 4–5 stars, or else the books they have borrowed.</p>
 {% include "books/_book_cards.html" with books=recommendations %}
 {% else %}
-<p class="text-body-secondary">Lend or rate a few books from the catalogue to get recommendations.</p>
+<p class="text-body-secondary mt-2">Lend or rate a few books from the catalogue to get recommendations.</p>
 {% endif %}
 {% endblock %}

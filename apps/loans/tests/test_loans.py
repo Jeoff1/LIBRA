@@ -102,4 +102,4 @@ class OverdueTests(LoanTestCase):
 
         response = self.client.get(reverse("loan_overdue"))
         self.assertEqual(list(response.context["loans"]), [late])
-        self.assertContains(response, "16 days overdue")
+        self.assertContains(response, "16d overdue")
