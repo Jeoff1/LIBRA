@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Overdue loans{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">Overdue loans <span class="text-body-secondary fs-6">({{ loans|length }})</span></h1>
+<p class="text-body-secondary">Books still out after their due date, most overdue first.</p>
+{% if loans %}
+{% include "loans/_loan_table.html" %}
+{% else %}
+<div class="alert alert-success">Nothing is overdue.</div>
+{% endif %}
+{% endblock %}

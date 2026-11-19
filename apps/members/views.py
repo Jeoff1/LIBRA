@@ -12,7 +12,7 @@ from .models import Member
 def member_list(request):
     members = Member.objects.annotate(
         active_loans=Count("loans", filter=Q(loans__return_date__isnull=True))
-    )
+    ).order_by("name")
     q = request.GET.get("q", "").strip()
     if q:
         members = members.filter(

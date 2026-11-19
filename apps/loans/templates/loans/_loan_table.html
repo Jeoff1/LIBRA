@@ -1,0 +1,32 @@
+<div class="table-responsive bg-body rounded shadow-sm">
+  <table class="table table-hover align-middle mb-0">
+    <thead>
+      <tr><th>Book</th><th>Member</th><th>Borrowed</th><th>Due</th><th>Status</th><th class="text-end">Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for loan in loans %}
+      <tr>
+        <td><a href="{{ loan.book.get_absolute_url }}">{{ loan.book.title|truncatechars:45 }}</a></td>
+        <td><a href="{{ loan.member.get_absolute_url }}">{{ loan.member }}</a></td>
+        <td>{{ loan.borrow_date }}</td>
+        <td>{{ loan.due_date }}</td>
+        <td>
+          {% if not loan.is_active %}<span class="badge text-bg-secondary">Returned {{ loan.return_date }}</span>
+          {% elif loan.is_overdue %}<span class="badge text-bg-danger">{{ loan.days_overdue }} days overdue</span>
+          {% else %}<span class="badge text-bg-success">On loan</span>{% endif %}
+        </td>
+        <td class="text-end text-nowrap">
+          {% if loan.is_active %}
+          <form class="d-inline" method="post" action="{% url 'loan_return' loan.pk %}">
+            {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button class="btn btn-sm btn-success" type="submit">Return</button>
+          </form>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'loan_update' loan.pk %}?next={{ request.get_full_path|urlencode }}">Edit</a>
+          {% endif %}
+          <a class="btn btn-sm btn-outline-danger" href="{% url 'loan_delete' loan.pk %}">Delete</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

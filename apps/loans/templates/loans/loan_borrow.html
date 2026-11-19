@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Lend a book{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <h1 class="h3 mb-1">Lend a book</h1>
+    <p class="text-body-secondary">Step 2 of 2: who is borrowing it?</p>
+    <div class="card shadow-sm mb-3">
+      <div class="card-body d-flex align-items-center gap-3">
+        {% if book.image_url %}<img class="cover-md rounded" src="{{ book.image_url }}" alt="">{% endif %}
+        <div class="flex-grow-1">
+          <div class="fw-semibold">{{ book.title }}</div>
+          <div class="text-body-secondary">{{ book.authors|truncatechars:80 }}</div>
+          <span class="badge {% if book.available_copies %}text-bg-success{% else %}text-bg-secondary{% endif %}">{{ book.available_copies }} of {{ book.total_copies }} available</span>
+        </div>
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'loan_create' %}{% if member %}?member={{ member.pk }}{% endif %}">Change book</a>
+      </div>
+    </div>
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% include "includes/form_fields.html" %}
+          <button class="btn btn-success" type="submit">Lend book</button>
+          <a class="btn btn-outline-secondary" href="{{ book.get_absolute_url }}">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
