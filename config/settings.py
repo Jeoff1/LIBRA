@@ -3,6 +3,7 @@
 import os
 from pathlib import Path
 
+from django.contrib.messages import constants as messages
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,6 +31,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "apps.core.apps.CoreConfig",
+    "apps.books.apps.BooksConfig",
+    "apps.members.apps.MembersConfig",
+    "apps.loans.apps.LoansConfig",
 ]
 
 MIDDLEWARE = [
@@ -98,3 +102,14 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "dashboard"
+LOGOUT_REDIRECT_URL = "login"
+
+# Bootstrap calls its red alert "danger".
+MESSAGE_TAGS = {messages.ERROR: "danger"}
+
+# goodbooks-10k CSVs (see README) and the trained recommender.
+DATA_DIR = BASE_DIR / "data"
+ML_MODELS_DIR = BASE_DIR / "ml_models"
