@@ -1,7 +1,5 @@
 from django.urls import path
 
-from apps.core.views import coming_soon
-
 from . import views
 
 urlpatterns = [
@@ -11,6 +9,8 @@ urlpatterns = [
     path("loans/<int:pk>/edit/", views.loan_update, name="loan_update"),
     path("loans/<int:pk>/return/", views.loan_return, name="loan_return"),
     path("loans/<int:pk>/delete/", views.loan_delete, name="loan_delete"),
-    path("ratings/", coming_soon, name="rating_list"),
-    path("ratings/new/", coming_soon, name="rating_create"),
+    path("ratings/", views.rating_list, name="rating_list"),
+    path("ratings/new/", views.rating_create, name="rating_create"),
+    path("ratings/<int:pk>/edit/", views.rating_update, name="rating_update"),
+    path("ratings/<int:pk>/delete/", views.rating_delete, name="rating_delete"),
 ]

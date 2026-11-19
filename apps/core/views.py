@@ -5,8 +5,3 @@ from django.shortcuts import render
 @login_required
 def dashboard(request):
     return render(request, "core/dashboard.html")
-
-
-@login_required
-def coming_soon(request, **kwargs):
-    return render(request, "core/coming_soon.html")

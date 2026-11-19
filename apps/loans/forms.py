@@ -1,10 +1,11 @@
 from django import forms
 from django.utils import timezone
 
+from apps.books.models import Book
 from apps.core.forms import BootstrapFormMixin, DateInput
 from apps.members.models import Member
 
-from .models import LOAN_DAYS, Loan
+from .models import LOAN_DAYS, Loan, Rating
 
 
 class BorrowForm(BootstrapFormMixin, forms.Form):
@@ -62,3 +63,62 @@ class LoanUpdateForm(BootstrapFormMixin, forms.ModelForm):
                 f"({self.instance.borrow_date})."
             )
         return due_date
+
+
+SCORE_CHOICES = [
+    ("", "Choose a score…"),
+    (5, "5 – Excellent"),
+    (4, "4 – Good"),
+    (3, "3 – Okay"),
+    (2, "2 – Poor"),
+    (1, "1 – Very poor"),
+]
+
+
+class RatingForm(BootstrapFormMixin, forms.ModelForm):
+    """Record a rating. Only books the member has borrowed are offered."""
+
+    class Meta:
+        model = Rating
+        fields = ["member", "book", "score", "rated_on"]
+        widgets = {
+            "score": forms.Select(choices=SCORE_CHOICES),
+            "rated_on": DateInput(),
+        }
+        help_texts = {"score": ""}
+
+    def __init__(self, *args, member=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["member"].empty_label = "Choose a member…"
+        self.fields["book"].empty_label = "Choose a book…"
+        borrowed = Book.objects.filter(loans__isnull=False)
+        if member is not None:
+            # Starting from a member's page: their borrowed, unrated books.
+            borrowed = borrowed.filter(loans__member=member).exclude(
+                ratings__member=member
+            )
+            self.fields[
+                "book"
+            ].help_text = f"Books {member} has borrowed and not rated yet."
+        else:
+            self.fields["book"].help_text = "Only books that have been borrowed."
+        self.fields["book"].queryset = borrowed.distinct().order_by("title")
+
+    def clean_rated_on(self):
+        rated_on = self.cleaned_data["rated_on"]
+        if rated_on > timezone.localdate():
+            raise forms.ValidationError("The rating date cannot be in the future.")
+        return rated_on
+
+
+class RatingUpdateForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = Rating
+        fields = ["score", "rated_on"]
+        widgets = {
+            "score": forms.Select(choices=SCORE_CHOICES),
+            "rated_on": DateInput(),
+        }
+        help_texts = {"score": ""}
+
+    clean_rated_on = RatingForm.clean_rated_on

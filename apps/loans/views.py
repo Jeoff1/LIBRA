@@ -11,8 +11,8 @@ from django.views.decorators.http import require_POST
 from apps.books.models import Book
 from apps.members.models import Member
 
-from .forms import BorrowForm, LoanUpdateForm
-from .models import Loan
+from .forms import BorrowForm, LoanUpdateForm, RatingForm, RatingUpdateForm
+from .models import Loan, Rating
 
 LOAN_STATUSES = {
     "active": "On loan",
@@ -161,4 +161,58 @@ def loan_delete(request, pk):
                 else ""
             ),
         },
+    )
+
+
+@login_required
+def rating_list(request):
+    ratings = Rating.objects.select_related("member", "book")
+    q = request.GET.get("q", "").strip()
+    if q:
+        ratings = ratings.filter(
+            Q(member__name__icontains=q) | Q(book__title__icontains=q)
+        )
+    page_obj = Paginator(ratings, 20).get_page(request.GET.get("page"))
+    return render(request, "loans/rating_list.html", {"page_obj": page_obj, "q": q})
+
+
+@login_required
+def rating_create(request):
+    member = None
+    if request.GET.get("member"):
+        member = get_object_or_404(Member, pk=request.GET["member"])
+    initial = {"member": member, "book": request.GET.get("book")}
+    form = RatingForm(request.POST or None, member=member, initial=initial)
+    if request.method == "POST" and form.is_valid():
+        rating = form.save()
+        messages.success(
+            request,
+            f"Saved {rating.member}'s rating of “{rating.book}”: {rating.score}/5.",
+        )
+        return redirect(rating.member)
+    return render(request, "loans/rating_form.html", {"form": form, "member": member})
+
+
+@login_required
+def rating_update(request, pk):
+    rating = get_object_or_404(Rating.objects.select_related("member", "book"), pk=pk)
+    form = RatingUpdateForm(request.POST or None, instance=rating)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, f"Updated the rating to {rating.score}/5.")
+        return redirect("rating_list")
+    return render(request, "loans/rating_form.html", {"form": form, "rating": rating})
+
+
+@login_required
+def rating_delete(request, pk):
+    rating = get_object_or_404(Rating.objects.select_related("member", "book"), pk=pk)
+    if request.method == "POST":
+        rating.delete()
+        messages.success(request, "Deleted the rating.")
+        return redirect("rating_list")
+    return render(
+        request,
+        "confirm_delete.html",
+        {"object": rating, "kind": "rating", "cancel_url": reverse("rating_list")},
     )
