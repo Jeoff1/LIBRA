@@ -7,6 +7,9 @@ venv/
 *.pem
 *.key
 
+# Dataset (download from Kaggle, see README)
+data/
+
 # Python and Django
 __pycache__/
 *.py[cod]
